@@ -1,0 +1,363 @@
+# Reverse Nodes in K-Group
+
+## Problem
+
+Given a linked list and an integer `k`, reverse the nodes of the linked list **k nodes at a time**.
+
+* If the number of nodes in the last group is less than `k`, do **not** reverse that group.
+* Return the modified linked list.
+
+### Example
+
+```text
+Input:
+1 → 2 → 3 → 4 → 5
+k = 2
+
+Output:
+2 → 1 → 4 → 3 → 5
+```
+
+---
+
+## Approach
+
+The solution works in 3 main steps:
+
+1. **Check whether k nodes are available.**
+2. **Reverse exactly k nodes.**
+3. **Recursively reverse the remaining linked list and connect it.**
+
+---
+
+## Important Pointers
+
+We use three pointers:
+
+### `curr`
+
+Points to the current node being processed.
+
+### `pre`
+
+Stores the previous node during reversal.
+
+### `temp`
+
+Temporarily stores `curr.next` so that the remaining list is not lost.
+
+---
+
+## Step 1: Check k Nodes
+
+```java
+int count = 0;
+
+while (curr != null && count < k) {
+    curr = curr.next;
+    count++;
+}
+```
+
+This checks whether the current group contains at least `k` nodes.
+
+* `count == k` → reverse the group.
+* `count < k` → keep the remaining nodes unchanged.
+
+---
+
+## Step 2: Reverse k Nodes
+
+The standard linked-list reversal pattern is:
+
+```java
+temp = curr.next;
+curr.next = pre;
+pre = curr;
+curr = temp;
+```
+
+### Meaning
+
+```text
+1 → 2 → 3
+```
+
+For node `1`:
+
+```text
+temp = 2
+1.next = null
+pre = 1
+curr = 2
+```
+
+Then continue with node `2`.
+
+After reversing:
+
+```text
+3 → 2 → 1
+```
+
+---
+
+## Step 3: Recursive Connection
+
+After reversing the current group:
+
+```java
+head.next = reverseKGroup(temp, k);
+```
+
+`temp` points to the beginning of the next group.
+
+Example:
+
+```text
+1 → 2 → 3 → 4 → 5
+```
+
+After reversing the first group:
+
+```text
+2 → 1
+```
+
+The remaining list is:
+
+```text
+3 → 4 → 5
+```
+
+The recursive call processes the remaining nodes:
+
+```text
+4 → 3 → 5
+```
+
+Finally:
+
+```text
+2 → 1 → 4 → 3 → 5
+```
+
+---
+
+## If Fewer Than k Nodes Remain
+
+Example:
+
+```text
+1 → 2 → 3 → 4 → 5
+k = 3
+```
+
+First group:
+
+```text
+1 → 2 → 3
+```
+
+becomes:
+
+```text
+3 → 2 → 1
+```
+
+Remaining:
+
+```text
+4 → 5
+```
+
+Since only 2 nodes are available and `k = 3`, they are **not reversed**.
+
+Final:
+
+```text
+3 → 2 → 1 → 4 → 5
+```
+
+---
+
+## Java Code
+
+```java
+class Solution {
+    public ListNode reverseKGroup(ListNode head, int k) {
+
+        if (head == null)
+            return head;
+
+        ListNode temp = null;
+        ListNode curr = head;
+        ListNode pre = null;
+
+        int count = 0;
+
+        // Check whether k nodes are available
+        while (curr != null && count < k) {
+            curr = curr.next;
+            count++;
+        }
+
+        curr = head;
+
+        // Reverse if k nodes are available
+        if (count == k) {
+
+            count = 0;
+
+            while (curr != null && count < k) {
+
+                temp = curr.next;
+                curr.next = pre;
+                pre = curr;
+                curr = temp;
+
+                count++;
+            }
+
+        } else {
+
+            // Less than k nodes → don't reverse
+            pre = head;
+        }
+
+        // Connect current group with remaining groups
+        if (temp != null) {
+            head.next = reverseKGroup(temp, k);
+        }
+
+        return pre;
+    }
+}
+```
+
+---
+
+## Dry Run
+
+### Input
+
+```text
+1 → 2 → 3 → 4 → 5
+k = 2
+```
+
+### Group 1
+
+```text
+1 → 2
+```
+
+After reversal:
+
+```text
+2 → 1
+```
+
+### Group 2
+
+```text
+3 → 4
+```
+
+After reversal:
+
+```text
+4 → 3
+```
+
+### Last Group
+
+```text
+5
+```
+
+Only one node is present, so it remains unchanged.
+
+### Final Answer
+
+```text
+2 → 1 → 4 → 3 → 5
+```
+
+---
+
+## Key Points to Remember
+
+```text
+1. First count k nodes.
+2. If count < k → don't reverse.
+3. If count == k → reverse exactly k nodes.
+4. Use the standard reversal pattern.
+5. `temp` stores the next group.
+6. Recursively process the remaining list.
+7. Connect using `head.next`.
+8. Return `pre` because it becomes the new head.
+```
+
+---
+
+## Most Important Reversal Pattern
+
+```java
+temp = curr.next;
+curr.next = pre;
+pre = curr;
+curr = temp;
+```
+
+Remember:
+
+```text
+SAVE → REVERSE → MOVE PRE → MOVE CURR
+```
+
+---
+
+## Complexity
+
+### Time Complexity
+
+```text
+O(n)
+```
+
+Every node is processed once.
+
+### Space Complexity
+
+```text
+O(n/k)
+```
+
+because of the recursive call stack.
+
+Worst case:
+
+```text
+O(n)
+```
+
+---
+
+## Interview Explanation
+
+> First, I check whether there are at least `k` nodes available. If there are `k` nodes, I reverse exactly those nodes using `pre`, `curr`, and `temp`. After reversing the current group, I recursively process the remaining list and connect it using `head.next`. If fewer than `k` nodes remain, I leave them unchanged.
+
+## Revision Formula
+
+```text
+Check k
+   ↓
+Reverse k
+   ↓
+Recursive remaining list
+   ↓
+Connect
+   ↓
+Return new head
+```
